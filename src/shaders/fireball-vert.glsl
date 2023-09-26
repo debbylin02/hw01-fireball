@@ -35,6 +35,8 @@ out vec4 fs_Col;            // The color of each vertex. This is implicitly pass
 // Position needed for the custom frag shader 
 out vec4 fs_Pos; 
 
+out vec4 fs_LightVec; 
+
 // displacement amount 
 out vec4 fs_displacement; 
 out float fs_total_displacement;
@@ -46,6 +48,9 @@ out float time;
 vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
 vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
 vec4 fade(vec4 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
+
+// light vector 
+const vec4 lightPos = vec4(5, 5, 3, 1);
 
 float cnoise(vec4 P){
   vec4 Pi0 = floor(P); // Integer part for indexing
@@ -251,6 +256,7 @@ float gain(float g, float t) {
 }
 
 
+
 void main()
 
 {
@@ -273,7 +279,8 @@ void main()
     // high amp = 4.f, low freq = 0.05f 
     // using toolbox - bias function 
     float perlinNoise =  cnoise(vec4(displacement.xyz, abs(0.02f * float(u_Time))));
-    float low_freq_high_amp = 4.f * abs(sin(0.05f * perlinNoise));    
+    // float low_freq_high_amp = 4.f * abs(sin(0.05f * perlinNoise));    
+    float low_freq_high_amp = 4.f * (sin(0.05f * perlinNoise));
     // displacement += low_freq_high_amp * bias(displacement.y + 1.f, 1.f);
     displacement.xz += low_freq_high_amp * bias(displacement.y + 1.f, 1.f);
 
@@ -288,9 +295,10 @@ void main()
 
     // high-freq, low-amp layer of fractal Brownian motion to apply finer  distortion on top 
     // high freq = 3.f, low amp = 0.05f
-    float FBM_noise = fbm(displacement.xyz * abs(0.02f * float(u_Time)), 3.f, 0.05f);
+    float FBM_noise = fbm(displacement.xyz * abs(0.02f * float(u_Time)), 3.f, 0.1f);
     float high_freq_low_amp_FBM = abs(sin(FBM_noise)); 
-    displacement += high_freq_low_amp_FBM;  
+    // float high_freq_low_amp_FBM = (sin(FBM_noise)); 
+    displacement.y += high_freq_low_amp_FBM;  
 
     // pass new model position to frag shader 
     fs_Pos = vec4(displacement.xyz, modelposition.w); 
@@ -301,6 +309,9 @@ void main()
 
     // pass time 
     time = float(u_Time);  
+
+    // light vector
+    fs_LightVec = lightPos - fs_Pos;  // Compute the direction in which the light source lies
 
     gl_Position = u_ViewProj * fs_Pos; // gl_Position is a built-in variable of OpenGL which is
                                        // used to render the final positions of the geometry's vertices

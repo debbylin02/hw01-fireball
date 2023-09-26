@@ -25,6 +25,8 @@ in vec4 fs_Nor;
 in vec4 fs_Col;
 in vec4 fs_Pos; 
 
+in vec4 fs_LightVec;
+
 // added for displacement 
 in vec4 fs_displacement;
 in float fs_total_displacement;
@@ -182,36 +184,29 @@ void main()
     // vec4 col = mix(botCol, topCol, smoothstep(-1.f, 1.f, clampedDisplacement * sin(float(time) * 0.2f)));
     vec4 col = mix(botCol, topCol, clampedDisplacement);
 
-    /////
+    // adding noise 
+    // float colorNoise = fbm(vec3(0, fs_displacement.y, 0), 9.f, 2.5f);
+    // float colorNoise = sin(fbm(vec3(fs_displacement.xy, sin(0.02f * time)), 3.f, 3.f) * 0.02f * time);
+    float colorNoise = fbm(vec3(fs_displacement.xy, sin(0.02f * time)), 3.f, 3.f);
 
-    // flame halo
-    // 1/x = hyperbola 
-    float distance = 1.f / length(fs_Pos * 2.f);
-    // dampen glow to control radius
-    distance *= 0.f; 
-    // raise intensity 
-    distance = pow(distance, 0.8f); 
-    // color
-    vec3 halo_col = distance * vec3(1.0, 0.5, 0.25); 
+    col += vec4(0.1) * colorNoise;
 
+   
+    // Calculate the diffuse term for Lambert shading
+    float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));
     
-	// float speed = 20.f;
-    // vec3 point = .5f * vec3(.5f * sin(speed * time * 0.1243f), -0.1f * sin(speed * time * 0.3f), 0.2f * sin(speed * time * 0.2f));
-    // float p1 = (sin(time) * 0.5f + 0.5f); 
-    // float a =  1.0 / dist(fs_Pos.xyz, point, 5.0f * ( 0.5f * sin(time) + 0.55f)) / 15.0f; 
-    // vec3 haloCol = mix(vec3(0.f), vec3(p1, 0.5f, 1.0f), a);
 
+    float ambientTerm = 0.2;
 
-    // diffuseColor = mix(diffuseColor, vec4(0.,0.,0.,1.), dist + 0.05);
+    float lightIntensity = diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
+                                                        //to simulate ambient lighting. This ensures that faces that are not
+                                                        //lit by our point light are not completely black.
 
-
-    // col = mix(col, diffuseColor, 1.0f); 
-
-    // Output to screen
+    // Compute final shaded color
+    // out_Col = vec4(col.rgb * lightIntensity, diffuseColor.a);
+   
+   // Output to screen
     out_Col = vec4(col.xyz, 1.0); 
-    
-
-    // out_Col = vec4(halo_col, 1.0);
 
     // out_Col = vec4(diffuseColor.rgb, diffuseColor.a);  
      

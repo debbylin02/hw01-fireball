@@ -1,4 +1,4 @@
-import {vec4, mat4} from 'gl-matrix';
+import {vec2, vec3, vec4, mat4} from 'gl-matrix';
 import Drawable from './Drawable';
 import {gl} from '../../globals';
 
@@ -112,6 +112,7 @@ class ShaderProgram {
     {
         gl.uniform1i(this.unifTime, t);
     }
+
   }
 
   draw(d: Drawable) {

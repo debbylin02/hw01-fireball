@@ -1,4 +1,4 @@
-import {vec3, vec4} from 'gl-matrix';
+import {vec2, vec3, vec4, mat4} from 'gl-matrix';
 const Stats = require('stats-js');
 import * as DAT from 'dat.gui';
 import Icosphere from './geometry/Icosphere';
@@ -20,8 +20,8 @@ tesselations: 5,
 color: [0, 255, 0, 1],
 // orange: 163, 33, 7
 // yellow: 219, 213, 92
-'top color' : [163, 33, 7, 1],
-'bottom color' : [219, 213, 92, 1],
+'top color' : [88, 74, 215, 1],
+'bottom color' : [143, 42, 45, 1],
 'Reset Fireball' : resetFireball
 };
 
@@ -121,14 +121,16 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/fireball-frag.glsl')),
   ]);
 
-  // const glow = new ShaderProgram([
-  //   new Shader(gl.VERTEX_SHADER, require('./shaders/glow-vert.glsl')),
-  //   new Shader(gl.FRAGMENT_SHADER, require('./shaders/glow-frag.glsl')),
-  // ]);
-  const glow = new ShaderProgram([
-    new Shader(gl.VERTEX_SHADER, require('./shaders/glow-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/glow-frag.glsl')),
+  const flat = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/flat-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/flat-frag.glsl')),
   ]);
+
+  const background = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/background-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/background-frag.glsl')),
+  ]);
+  background.setGeometryColor([0.5, 0.5, 0.5, 1.0]); 
 
   // This function will be called every frame
   function tick(){
@@ -151,16 +153,17 @@ function main() {
     const updatedColor = vec4.fromValues(controls.color[0] / 255, controls.color[1] / 255, controls.color[2] / 255, controls.color[3]); 
     const topColor = vec4.fromValues(controls['top color'][0] / 255, controls['top color'][1] / 255, controls['top color'][2] / 255, controls['top color'][3]); 
     const bottomColor = vec4.fromValues(controls['bottom color'][0] / 255, controls['bottom color'][1] / 255, controls['bottom color'][2] / 255, controls['bottom color'][3]); 
-    // renderer.render(camera, fireball, updatedColor, tickCount, [
-    renderer.render(camera, fireball, topColor, bottomColor, tickCount, [
-      icosphere,
-      // square,
-      // cube 
+    
+
+    renderer.render(camera, background, topColor, bottomColor, tickCount, [
+      cube, 
     ]);
 
-    renderer.render(camera, glow, topColor, bottomColor, tickCount, [
+    // fireball 
+    renderer.render(camera, fireball, topColor, bottomColor, tickCount, [
       icosphere,
     ]);
+
 
     stats.end();
 
