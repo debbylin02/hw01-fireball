@@ -22,9 +22,29 @@ class OpenGLRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
-  render(camera: Camera, prog: ShaderProgram, drawables: Array<Drawable>, time: number) {
-    prog.setEyeRefUp(camera.controls.eye, camera.controls.center, camera.controls.up);
-    prog.setTime(time);
+  // added updatedColor and time variable 
+  render(camera: Camera, prog: ShaderProgram, updatedColor: vec4, updatedBottomColor: vec4, tickCount: GLint, drawables: Array<Drawable>) {
+  // render(camera: Camera, prog: ShaderProgram, topColor: vec4, bottomColor: vec4, tickCount: GLint, drawables: Array<Drawable>) {
+    let model = mat4.create();
+    let viewProj = mat4.create();
+    // let color = vec4.fromValues(1, 0, 0, 1);
+
+    // set color and time 
+    let color = updatedColor;
+    let bottomColor = updatedBottomColor; 
+    let time = tickCount;
+
+    mat4.identity(model);
+    mat4.multiply(viewProj, camera.projectionMatrix, camera.viewMatrix);
+    prog.setModelMatrix(model);
+    prog.setViewProjMatrix(viewProj);
+    prog.setGeometryColor(color);
+
+    // bottom color 
+    prog.setBottomColor(bottomColor);
+
+    // call set time function 
+    prog.setTime(time); 
 
     for (let drawable of drawables) {
       prog.draw(drawable);
