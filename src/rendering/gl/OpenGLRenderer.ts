@@ -23,7 +23,7 @@ class OpenGLRenderer {
   }
 
   // added updatedColor and time variable 
-  render(camera: Camera, prog: ShaderProgram, updatedColor: vec4, updatedBottomColor: vec4, tickCount: GLint, drawables: Array<Drawable>) {
+  render(camera: Camera, prog: ShaderProgram, updatedColor: vec4, updatedBottomColor: vec4, tickCount: GLint, flameSize: GLfloat, drawables: Array<Drawable>) {
   // render(camera: Camera, prog: ShaderProgram, topColor: vec4, bottomColor: vec4, tickCount: GLint, drawables: Array<Drawable>) {
     let model = mat4.create();
     let viewProj = mat4.create();
@@ -45,6 +45,9 @@ class OpenGLRenderer {
 
     // call set time function 
     prog.setTime(time); 
+
+    // set flame size 
+    prog.setFlameSize(flameSize); 
 
     for (let drawable of drawables) {
       prog.draw(drawable);

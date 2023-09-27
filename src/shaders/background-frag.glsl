@@ -221,13 +221,12 @@ float cnoise(vec4 P){
 
 void main()
 {
-    //// 
-    float skyRadius = 500.f; 
+    float skyRadius = 300.f; 
     vec3 env_c1 = vec3(13.f / 255.f, 26.f / 255.f, 47.f / 255.f);
     vec3 env_c2 = vec3(15.f / 255.f, 134.f / 255.f, 130.f / 255.f); 
 
-    float clusterSize = 0.2f;
-    float clusterStrength = 0.2f; 
+    float clusterSize = 0.8f;
+    float clusterStrength = 0.1f; 
     float starSize = 0.01f; 
     float starDensity = 0.09f; 
     vec4 noiseOffset = vec4(100.01); 
@@ -248,15 +247,14 @@ void main()
     float c = clamp(pow(abs(cs), 1.0 / starDensity), 0.0, 1.0); 
     vec4 starColor = 0.5 * vec4(c, c, c, 1.0);
 
-  
     // star noise 
     vec3 p = fs_Pos.xyz * mod(time * 2.5f, 10.f); 
     float sn = sin(time * 0.2f) * 0.5 + 0.5;
     float starNoise = (cnoise(vec4(p * 0.5f, sin(time))) * 0.5f + 0.5f) * sn;
 
+    // Compute final shaded color
     out_Col = backgroundColor;
-    // out_Col += starColor; 
     out_Col += (starColor * starNoise);
     
-    // Compute final shaded color
+    
 }

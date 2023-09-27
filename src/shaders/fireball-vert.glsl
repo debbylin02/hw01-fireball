@@ -22,6 +22,9 @@ uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformati
 // time variable needed for vertex deformation
 uniform int u_Time;
 
+// flame size 
+uniform float u_FlameSize; 
+
 in vec4 vs_Pos;             // The array of vertex positions passed to the shader
 
 in vec4 vs_Nor;             // The array of vertex normals passed to the shader
@@ -255,8 +258,6 @@ float gain(float g, float t) {
     }
 }
 
-
-
 void main()
 
 {
@@ -264,7 +265,7 @@ void main()
 
     mat3 invTranspose = mat3(u_ModelInvTr);
     fs_Nor = normalize(vec4(invTranspose * vec3(vs_Nor), 0));          
-
+    
     vec4 modelposition = u_Model * vs_Pos;   // Temporarily store the transformed vertex positions for use below
 
     // displacement vector 
@@ -274,33 +275,32 @@ void main()
     // main fire shape - using toolbox gain function 
     displacement.xz *= gain(displacement.y - 1.f, 0.2f);
     displacement.y *= 1.5f;
-  
-    // low-freq, high-amp displacement of fire using sine functions 
-    // high amp = 4.f, low freq = 0.05f 
-    // using toolbox - bias function 
-    float perlinNoise =  cnoise(vec4(displacement.xyz, abs(0.02f * float(u_Time))));
-    // float low_freq_high_amp = 4.f * abs(sin(0.05f * perlinNoise));    
-    float low_freq_high_amp = 4.f * (sin(0.05f * perlinNoise));
-    // displacement += low_freq_high_amp * bias(displacement.y + 1.f, 1.f);
-    displacement.xz += low_freq_high_amp * bias(displacement.y + 1.f, 1.f);
+    
+    // translate down 
+    displacement.y -= .5f;
 
-    // trig function (sin) to non-uniformly modify your cube's vertex positions over time. 
-    float sinFunc = abs(sin(0.02f * float(u_Time))); 
-
-    // more flickering at top - using toolbox sawtooth wave
-    // freq = 0.8f, amplitude = 0.7f
+    // make tip of flame more flame like with sawtooth wave 
     if (displacement.y > 0.f) {
-      displacement.y += displacement.y * sawtooth_wave(displacement.y, 0.5, 1.0f);
+      // rescale 
+      displacement.y *= u_FlameSize; 
+      displacement.y += 0.8f * sawtooth_wave(displacement.y, 0.3f, 3.f) * gain(abs(sin(0.02f * float(u_Time))), 0.7f);
     }
+
+    // low-freq, high-amp displacement of fire using sine functions 
+    // high amp = 3.f, low freq = 0.1f 
+    // using toolbox - bias function 
+    float perlinNoise =  cnoise(vec4(displacement.xyz, abs(0.02f * float(u_Time)))); 
+    float low_freq_high_amp = 4.f * (sin(0.1f * perlinNoise));
+    displacement.xz += low_freq_high_amp * bias(displacement.y + 0.3f, 0.5f);
 
     // high-freq, low-amp layer of fractal Brownian motion to apply finer  distortion on top 
     // high freq = 3.f, low amp = 0.05f
-    float FBM_noise = fbm(displacement.xyz * abs(0.02f * float(u_Time)), 3.f, 0.1f);
+    float FBM_noise = gain(fbm(displacement.xyz * abs(0.02f * float(u_Time)), 4.f, 0.3f), 0.7f);
     float high_freq_low_amp_FBM = abs(sin(FBM_noise)); 
-    // float high_freq_low_amp_FBM = (sin(FBM_noise)); 
-    displacement.y += high_freq_low_amp_FBM;  
+    // displacement.y += high_freq_low_amp_FBM;  
+    displacement.xyz += high_freq_low_amp_FBM;  
 
-    // pass new model position to frag shader 
+    // set fs_Pos 
     fs_Pos = vec4(displacement.xyz, modelposition.w); 
 
     // displacement btwn new and old model positions 

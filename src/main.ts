@@ -17,12 +17,13 @@ tesselations: 5,
 'Load Scene': loadScene, // A function pointer, essentially
 
 // Update the existing GUI w/ a parameter to alter the color passed to u_Color
-color: [0, 255, 0, 1],
+// color: [0, 255, 0, 1],
 // orange: 163, 33, 7
 // yellow: 219, 213, 92
-'top color' : [88, 74, 215, 1],
-'bottom color' : [143, 42, 45, 1],
-'Reset Fireball' : resetFireball
+'Top color' : [88, 74, 215, 1],
+'Bottom color' : [143, 42, 45, 1],
+'Reset Fireball' : resetFireball,
+flameSize : 1.0
 };
 
 // // true if clicked reset fireball 
@@ -58,9 +59,10 @@ function resetFireball()
   icosphere.create();
 
   // reset controls 
-  controls['top color'] = [163, 33, 7, 1];
-  controls['bottom color'] = [219, 213, 92, 1]; 
+  controls['Top color'] = [88, 74, 215, 1];
+  controls['Bottom color'] = [143, 42, 45, 1];  
   controls.tesselations = 5;
+  controls.flameSize = 1.0; 
 
   gui.updateDisplay();
 }
@@ -78,11 +80,12 @@ function main() {
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
   gui.add(controls, 'Reset Fireball');
+  gui.add(controls, 'flameSize', 1.0, 1.8).step(0.1);
 
   // adding color picker 
-  gui.addColor(controls, 'color'); 
-  gui.addColor(controls, 'top color'); 
-  gui.addColor(controls, 'bottom color'); 
+  // gui.addColor(controls, 'color'); 
+  gui.addColor(controls, 'Top color'); 
+  gui.addColor(controls, 'Bottom color'); 
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -150,17 +153,16 @@ function main() {
   
     // update color - pass to renderer/shader 
     // pass tickCount to renderer/shader  
-    const updatedColor = vec4.fromValues(controls.color[0] / 255, controls.color[1] / 255, controls.color[2] / 255, controls.color[3]); 
-    const topColor = vec4.fromValues(controls['top color'][0] / 255, controls['top color'][1] / 255, controls['top color'][2] / 255, controls['top color'][3]); 
-    const bottomColor = vec4.fromValues(controls['bottom color'][0] / 255, controls['bottom color'][1] / 255, controls['bottom color'][2] / 255, controls['bottom color'][3]); 
-    
-
-    renderer.render(camera, background, topColor, bottomColor, tickCount, [
+    // const updatedColor = vec4.fromValues(controls.color[0] / 255, controls.color[1] / 255, controls.color[2] / 255, controls.color[3]); 
+    const topColor = vec4.fromValues(controls['Top color'][0] / 255, controls['Top color'][1] / 255, controls['Top color'][2] / 255, controls['Top color'][3]); 
+    const bottomColor = vec4.fromValues(controls['Bottom color'][0] / 255, controls['Bottom color'][1] / 255, controls['Bottom color'][2] / 255, controls['Bottom color'][3]); 
+    const updatedFlameSize = controls.flameSize; 
+    renderer.render(camera, background, topColor, bottomColor, tickCount, updatedFlameSize, [
       cube, 
     ]);
 
     // fireball 
-    renderer.render(camera, fireball, topColor, bottomColor, tickCount, [
+    renderer.render(camera, fireball, topColor, bottomColor, tickCount, updatedFlameSize, [
       icosphere,
     ]);
 

@@ -36,6 +36,9 @@ class ShaderProgram {
   // added time 
   unifTime: WebGLUniformLocation; 
 
+  // flame size 
+  unifFlameSize: WebGLUniformLocation; 
+
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
 
@@ -60,6 +63,9 @@ class ShaderProgram {
     
     // added for time 
     this.unifTime = gl.getUniformLocation(this.prog, "u_Time"); 
+
+    // added for flame size 
+    this.unifFlameSize = gl.getUniformLocation(this.prog, "u_FlameSize"); 
   }
 
   use() {
@@ -108,11 +114,19 @@ class ShaderProgram {
   // setting the unifTime variable 
   setTime(t: GLint){
     this.use(); 
-    if(this.unifTime != -1)
+    if(this.unifTime !== -1)
     {
         gl.uniform1i(this.unifTime, t);
     }
+  }
 
+  // setting the unifFlameSize variable
+  setFlameSize(size: GLfloat){
+    this.use(); 
+    if(this.unifFlameSize !== -1)
+    {
+      gl.uniform1f(this.unifFlameSize, size);
+    }
   }
 
   draw(d: Drawable) {

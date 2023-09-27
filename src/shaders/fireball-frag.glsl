@@ -27,6 +27,9 @@ in vec4 fs_Pos;
 
 in vec4 fs_LightVec;
 
+// flame size 
+uniform float u_FlameSize; 
+
 // added for displacement 
 in vec4 fs_displacement;
 in float fs_total_displacement;
@@ -166,49 +169,30 @@ void main()
 
     // Material base color (before shading)
     vec4 diffuseColor = u_Color;
-    
-    // apply a gradient of colors to surface, 
-    // where the fragment color is correlated in some way to the vertex shader's displacement
-    
+
     // Colors to blend - top and bottom 
-    // orange: 163, 33, 7
-    // yellow: 219, 213, 92
     vec4 topCol = u_Color; 
     vec4 botCol = u_BottomColor; 
-    float clampedDisplacement = clamp(fs_displacement.y, -1.0, 1.0); 
-    
-    
+
+    // divide by flame size 
+    // fs_displacement *= (u_FlameSize); 
+
+    float clampedDisplacement = clamp(fs_displacement.y, 0.f, 1.f); 
+
+
+
     // use mix and smoothstep 
     // mix - lineraly interpolates btwn two values 
-    // smoothstep - interpolates between two values along a Hermite curve ("eases in/out" near the extremes of the interpolation)
-    // vec4 col = mix(botCol, topCol, smoothstep(-1.f, 1.f, clampedDisplacement * sin(float(time) * 0.2f)));
     vec4 col = mix(botCol, topCol, clampedDisplacement);
 
     // adding noise 
-    // float colorNoise = fbm(vec3(0, fs_displacement.y, 0), 9.f, 2.5f);
-    // float colorNoise = sin(fbm(vec3(fs_displacement.xy, sin(0.02f * time)), 3.f, 3.f) * 0.02f * time);
-    float colorNoise = fbm(vec3(fs_displacement.xy, sin(0.02f * time)), 3.f, 3.f);
-
-    col += vec4(0.1) * colorNoise;
-
-   
-    // Calculate the diffuse term for Lambert shading
-    float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));
+    float colorNoise = fbm(vec3(fs_displacement.xy, cos(0.02f * time)), 3.f, 3.f);
+    col.xyz += col.xyz * 0.5f * colorNoise; 
     
-
-    float ambientTerm = 0.2;
-
-    float lightIntensity = diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
-                                                        //to simulate ambient lighting. This ensures that faces that are not
-                                                        //lit by our point light are not completely black.
-
-    // Compute final shaded color
-    // out_Col = vec4(col.rgb * lightIntensity, diffuseColor.a);
-   
-   // Output to screen
+    // Output to screen
     out_Col = vec4(col.xyz, 1.0); 
 
     // out_Col = vec4(diffuseColor.rgb, diffuseColor.a);  
      
-
 }
+
