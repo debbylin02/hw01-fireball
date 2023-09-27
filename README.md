@@ -1,5 +1,11 @@
 # [Project 1: Noise](https://github.com/CIS-566-Fall-2022/hw01-fireball-base)
 
+## Description
+In this project I practiced using WebGL to make a Fireball. For this project, I utilized a combination of various functions, such as sawtooth waves, gain, bias, mix, smoothstep, sin, perlin noise and fbm. 
+I added 3 interactable elements to the GUI: 2 color adjusters for the flame and 1 flame size adjuster. 
+I also added a starry night sky box as a background baed on this skydome: (https://stackblitz.com/edit/starry-skydome-t1j7od?file=index.js)
+ 
+
 ## Objective
 
 Get comfortable with using WebGL and its shaders to generate an interesting 3D, continuous surface using a multi-octave noise algorithm.
